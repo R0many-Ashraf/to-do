@@ -1,33 +1,358 @@
-<!doctype html>
-<html class="no-js" lang="">
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
-  <link rel="stylesheet" href="css/style.css">
-  <meta name="description" content="">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protected To-Do List</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f7f7f7;
+      --text-color: #333;
+      --btn-bg-color: #007bff;
+      --btn-text-color: white;
+      --list-bg-color: #eee;
+      --tick-color: #28a745;
+    }
 
-  <meta property="og:title" content="">
-  <meta property="og:type" content="">
-  <meta property="og:url" content="">
-  <meta property="og:image" content="">
-  <meta property="og:image:alt" content="">
+    .dark-theme {
+      --bg-color: #181818;
+      --text-color: #e0e0e0;
+      --btn-bg-color: #1e90ff;
+      --btn-text-color: #e0e0e0;
+      --list-bg-color: #333;
+      --tick-color: #32cd32;
+    }
 
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" href="/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon.png">
+    body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Roboto', sans-serif;
+      transition: background-color 0.5s, color 0.5s;
+    }
 
-  <link rel="manifest" href="site.webmanifest">
-  <meta name="theme-color" content="#fafafa">
+    .container {
+      text-align: center;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+      border-radius: 10px;
+      background: var(--list-bg-color);
+      padding: 20px;
+      transition: background-color 0.5s;
+    }
+
+    h1, h2 {
+      color: var(--text-color);
+      transition: color 0.5s;
+    }
+
+    input, button {
+      margin-top: 10px;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      background: var(--list-bg-color);
+      color: var(--text-color);
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: var(--btn-bg-color);
+      color: var(--btn-text-color);
+      border-color: var(--btn-bg-color);
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      margin-top: 10px;
+      background: var(--list-bg-color);
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      position: relative;
+      animation: slideIn 0.5s ease;
+      transition: background-color 0.5s;
+    }
+
+    li:after {
+      content: '✓';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--tick-color);
+      font-size: 20px;
+      display: none;
+      transition: color 0.5s;
+    }
+
+    li.completed:after {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .applause {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: var(--btn-bg-color);
+      z-index: 1000;
+      background-color: var(--list-bg-color);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .stars {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: url('star.png') no-repeat center center;
+      background-size: contain;
+      opacity: 0;
+      animation: star-animation 1s ease-out forwards;
+    }
+
+    @keyframes star-animation {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-50px) scale(2);
+      }
+    }
+
+    /* Settings Icon */
+    #settingsIcon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 30px;
+      height: 30px;
+      background: url('settings-icon.png') no-repeat center center;
+      background-size: contain;
+      cursor: pointer;
+    }
+
+    /* Settings Modal */
+    #settingsModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--list-bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    #closeSettings {
+      cursor: pointer;
+      background-color: var(--btn-bg-color);
+      color: var(--btn-text-color);
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    /* Media Query for Mobile View */
+    @media only screen and (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+      input, button {
+        width: calc(100% - 20px);
+      }
+      li {
+        padding: 8px;
+      }
+    }
+  </style>
 </head>
-
 <body>
+<div class="container" id="content">
+  <h1>To-Do List</h1>
+  <input type="text" id="usernameInput" placeholder="Enter your name">
+  <div></div>
+  <input type="text" id="taskInput" placeholder="Add new task...">
+  <input type="datetime-local" id="reminderInput">
+  <button id="addBtn">Add</button>
+  <ul id="taskList"></ul>
+  <h2>Completed Tasks</h2>
+  <ul id="completedList"></ul>
+  <button id="themeBtn">Switch Theme</button>
+  <div id="applause" class="applause"></div>
+  <div id="settingsIcon"></div>
+  <div id="settingsModal">
+    <h2>Completed Missions</h2>
+    <ul id="completedMissionsList"></ul>
+    <button id="closeSettings">Close</button>
+  </div>
+</div>
 
-  <!-- Add your site or application content here -->
-  <p>Hello world! This is HTML5 Boilerplate.</p>
-  <script src="js/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const taskInput = document.getElementById("taskInput");
+  const reminderInput = document.getElementById("reminderInput");
+  const addBtn = document.getElementById("addBtn");
+  const taskList = document.getElementById("taskList");
+  const completedList = document.getElementById("completedList");
+  const themeBtn = document.getElementById("themeBtn");
+  const usernameInput = document.getElementById("usernameInput");
+  const applauseDiv = document.getElementById("applause");
+  const settingsIcon = document.getElementById("settingsIcon");
+  const settingsModal = document.getElementById("settingsModal");
+  const closeSettings = document.getElementById("closeSettings");
+  const completedMissionsList = document.getElementById("completedMissionsList");
 
+  function createHistoryItem(text) {
+    const historyItem = document.createElement("li");
+    historyItem.textContent = text;
+    historyItem.classList.add('completed');
+    historyItem.addEventListener("click", function() {
+      completedList.removeChild(historyItem);
+    });
+    completedList.appendChild(historyItem);
+    addToSettings(historyItem.cloneNode(true));
+  }
+
+  addBtn.addEventListener("click", function() {
+    const taskText = taskInput.value.trim();
+    const reminderText = reminderInput.value.trim();
+    if (taskText !== "") {
+      const li = document.createElement("li");
+      li.textContent = ${taskText} (Reminder: ${reminderText});
+      li.addEventListener("click", function() {
+        createHistoryItem(taskText);
+        taskList.removeChild(li);
+        playApplause();
+      });
+      taskList.appendChild(li);
+      taskInput.value = "";
+      reminderInput.value = "";
+    }
+  });
+
+  taskInput.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      addBtn.click();
+    }
+  });
+
+  themeBtn.addEventListener("click", function() {
+    document.body.classList.toggle("dark-theme");
+  });
+
+  settingsIcon.addEventListener("click", function() {
+    settingsModal.style.display = "block";
+  });
+
+  closeSettings.addEventListener("click", function() {
+    settingsModal.style.display = "none";
+  });
+
+  function playApplause() {
+    const audio = new Audio('applause.mp3'); // Ensure you have an applause.mp3 file in
+
+    
+    audio.play();
+
+    const username = usernameInput.value || 'User';
+    applauseDiv.textContent = Bravo ${username}!;
+    applauseDiv.style.display = 'block';
+
+    setTimeout(() => {
+      applauseDiv.style.display = 'none';
+    }, 3000);
+
+    for (let i = 0; i < 10; i++) {
+      createStar();
+    }
+  }
+
+  function createStar() {
+    const star = document.createElement('div');
+    star.className = 'stars';
+    star.style.left = ${Math.random() * window.innerWidth}px;
+    star.style.top = ${Math.random() * window.innerHeight}px;
+    document.body.appendChild(star);
+    setTimeout(() => {
+      document.body.removeChild(star);
+    }, 1000);
+  }
+
+  function addToSettings(completedItem) {
+    completedItem.addEventListener("click", function() {
+      completedMissionsList.removeChild(completedItem);
+    });
+    completedMissionsList.appendChild(completedItem);
+  }
+
+  // Disable right-click
+  document.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+  }, false);
+
+  // Disable common key combinations (Ctrl+U, Ctrl+S, Ctrl+Shift+I)
+  document.addEventListener("keydown", function(e) {
+    if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.shiftKey && e.key === 'i')) {
+      e.preventDefault();
+    }
+  });
+
+  // Obfuscated function to display password prompt on copy attempt
+  function copyProtection() {
+    const password = prompt("Enter password to copy code:");
+    if (password !== "Rom@192004") {
+      alert("Incorrect password.");
+      return false;
+    }
+    return true;
+  }
+
+  // Attach copyProtection function to copy events
+  document.addEventListener("copy", function(e) {
+    if (!copyProtection()) {
+      e.preventDefault();
+    }
+  });
+
+  // Attach copyProtection function to paste events
+  document.addEventListener("paste", function(e) {
+    if (!copyProtection()) {
+      e.preventDefault();
+    }
+  });
+});
+</script>
 </body>
-
 </html>
